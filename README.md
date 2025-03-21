@@ -2,5 +2,6 @@
 Далее запустие файл start_bot.bat, дождитесь загрузки всего необходимого и не закрывайте этот файл. 
 Найдите в тг бота @rico2shbot
 Пользуйтесь!
+P.S. убедитесь, что у Вас установлено MongoDB локально на устройстве
 
 [lab_work_UD-master.zip](https://github.com/user-attachments/files/19397388/lab_work_UD-master.zip)
