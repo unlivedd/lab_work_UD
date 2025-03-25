@@ -20,4 +20,9 @@
 ## Загрузка проекта
 
 Чтобы загрузить проект - воспользуйтесь .zip файлом
-[lab_work_UD-master (2).zip](https://github.com/user-attachments/files/19446214/lab_work_UD-master.2.zip)
+[task-mng-bot.zip](https://github.com/user-attachments/files/19446214/lab_work_UD-master.2.zip)
+
+## Как найти бота и запустить? 
+1. Введите в поиске в телеграме @rico2shbot
+2. Нажмите /start
+3. Введите /help чтобы еще раз увидеть весь функционал бота
