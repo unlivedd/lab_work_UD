@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from datetime import datetime, timedelta
 from bson import ObjectId 
 from config import MONGO_URI, DB_NAME
 
@@ -6,10 +7,11 @@ client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 tasks_collection = db.tasks
 
-def add_task(user_id, text, deadline):
+
+def add_task(user_id, text, deadline: datetime):
     task = {
-        "user_id": user_id, 
-        "text": text, 
+        "user_id": user_id,
+        "text": text,
         "deadline": deadline, 
         "completed": False
     }
@@ -32,5 +34,13 @@ def update_task(task_id, new_text=None, completed=None):
     )
     return result.modified_count 
 
-def delete_tasks_by_date(user_id, date):
-    tasks_collection.delete_many({"user_id": user_id, "deadline": date})
+def delete_tasks_by_date(user_id, date_str):
+
+    target_date = datetime.strptime(date_str, "%Y-%m-%d")
+    tasks_collection.delete_many({
+        "user_id": user_id,
+        "deadline": {
+            "$gte": target_date,
+            "$lt": target_date + timedelta(days=1)
+        }
+    })

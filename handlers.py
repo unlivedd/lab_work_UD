@@ -20,7 +20,7 @@ async def start(message: types.Message):
 @dp.message(Command("help"))
 async def help_command(message: types.Message):
     text = (
-        "/add <текст> <дата> - Добавить задачу (дата в формате YYYY-MM-DD)\n"
+        "/add <текст> <дата> - Добавить задачу (дата в формате YYYY-MM-DD HH:MM)\n"
         "/list - Показать список задач\n"
         "/done <ID> - Отметить задачу выполненной\n"
         "/delete <дата> - Удалить задачи на указанную дату\n"
@@ -30,24 +30,22 @@ async def help_command(message: types.Message):
 @dp.message(Command("add"))
 async def add_task_handler(message: types.Message):
     try:
-
-        match = re.search(r'(\d{4}-\d{2}-\d{2})$', message.text)
+        match = re.search(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2})$', message.text)
         if not match:
-            raise ValueError("Дата должна быть в конце!")
+            raise ValueError("Неверный формат даты. Используйте: ГГГГ-ММ-ДД ЧЧ:ММ")
         
-        deadline = match.group(1)
-        text = message.text.replace(f"/add {deadline}", "").strip()
+        deadline_str = match.group(1)
+        text = message.text.replace(f"/add {deadline_str}", "").strip()
         
-        if not text:
-            raise ValueError("Текст задачи не может быть пустым!")
+        deadline = datetime.strptime(deadline_str, "%Y-%m-%d %H:%M")
         
         user_id = message.from_user.id
         add_task(user_id, text, deadline)
         await message.answer("✅ Задача добавлена!")
     except ValueError as ve:
-        await message.answer(f"🚫 Ошибка: {ve}\nПример: /add Купить молоко 2025-03-22")
+        await message.answer(f"🚫 Ошибка: {ve}")
     except Exception:
-        await message.answer("❌ Ошибка. Проверьте формат команды.")
+        await message.answer("❌ Пример: /add Купить молоко 2025-03-22 15:30")
 
 @dp.message(Command("list"))
 async def list_tasks(message: types.Message):
@@ -61,20 +59,21 @@ async def list_tasks(message: types.Message):
     now = datetime.now()
     for task in tasks:
         try:
-
-            deadline = datetime.strptime(task["deadline"], "%Y-%m-%d")
+            if isinstance(task["deadline"], str):
+                deadline = datetime.strptime(task["deadline"], "%Y-%m-%d %H:%M")
+            else:
+                deadline = task["deadline"]
+            
             days_left = (deadline - now).days
-            status = "✅" if task["completed"] else "❌"
+            hours_left = (deadline - now).seconds // 3600
+            status = "✅" if task.get("completed", False) else "❌"
             response += (
-                f"{task['_id']} | {task['text']} | {task['deadline']} | "
-                f"{status} ({days_left} дн.)\n"
+                f"{task['_id']} | {task['text']} | "
+                f"{deadline.strftime('%Y-%m-%d %H:%M')} | "
+                f"{status} (Осталось: {days_left} дн. {hours_left} ч.)\n"
             )
-        except ValueError:
-            response += (
-                f"{task['_id']} | {task['text']} | 🚫 Некорректная дата: "
-                f"{task['deadline']}\n"
-            )
-
+        except Exception as e:
+            response += f"{task['_id']} | 🚫 Некорректные данные: {e}\n"
 
     await message.answer(response)
 
